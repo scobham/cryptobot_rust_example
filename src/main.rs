@@ -65,15 +65,15 @@ extern crate serde_json;
 
 use serde_json::Value as JsonValue;
 
-use std::{intrinsics::type_name, io::Read};
+use std::{any::type_name, io::Read};
 // use std::any::type_name;
 
 // use reqwest;
 use reqwest::{Error, Result, blocking::Response};
 
-fn type_of(_: T) -> &'static str {
-    type_name::()
-}
+// fn type_of(_: T) -> &'static str {
+//     type_name::()
+// }
 
 // fn simple_price(url: &str) -> Result<reqwest::blocking::Response> {
 fn simple_price() -> Result<reqwest::blocking::Response> {
@@ -139,17 +139,20 @@ fn main() -> Result<()> {
     println!("Body: {}", body);
 
     println!("============= Coin Market Chart =============");
-    res = coin_market_chart()?;
-    res.read_to_string(&mut body).unwrap();
-    println!("Status: {}", res.status());
-    println!("Headers:\n {:#?}", res.headers());
-    println!("Body: {}", body);
-    println!("{}", type_of(body));
+    let mut res2 = coin_market_chart()?;
+    let mut body2 = String::new();
 
-    let json_res = serde_json::from_str(body);
+    res2.read_to_string(&mut body2).unwrap();
+    println!("Status: {}", res2.status());
+    println!("Headers:\n {:#?}", res2.headers());
+    println!("Body: {}", &body2);
+    // println!("{}", type_of(&body2));
+
+    let json_res = serde_json::from_str(&body2);
     if json_res.is_ok() {
         let p: JsonValue = json_res.unwrap();
-        println!("============= Prices =============\n {}", p["prices"].as_str().unwrap());
+        // println!("============= Prices =============\n {}", p["prices"].as_str().unwrap());
+        println!("============= Prices =============\n {:#?}", p["prices"]);
     } else {
         println!("Didn't work!");
     }
