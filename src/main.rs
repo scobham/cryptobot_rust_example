@@ -62,8 +62,12 @@
 
 extern crate reqwest;
 extern crate serde_json;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 use serde_json::Value as JsonValue;
+use serde_json::json;
 
 use std::{any::type_name, io::Read};
 // use std::any::type_name;
@@ -71,9 +75,17 @@ use std::{any::type_name, io::Read};
 // use reqwest;
 use reqwest::{Error, Result, blocking::Response};
 
-// fn type_of(_: T) -> &'static str {
-//     type_name::()
-// }
+#[derive(Serialize, Deserialize)]
+struct CoinHistory {
+    prices: Vec<f32>,
+    market_caps: Vec<f32>,
+    total_volumes: Vec<f32>
+
+}
+
+fn type_of<T>(_: &T) -> &'static str {
+    type_name::<T>()
+}
 
 // fn simple_price(url: &str) -> Result<reqwest::blocking::Response> {
 fn simple_price() -> Result<reqwest::blocking::Response> {
@@ -143,8 +155,8 @@ fn main() -> Result<()> {
     let mut body2 = String::new();
 
     res2.read_to_string(&mut body2).unwrap();
-    println!("Status: {}", res2.status());
-    println!("Headers:\n {:#?}", res2.headers());
+    println!("Status: {}", &res2.status());
+    println!("Headers:\n {:#?}", &res2.headers());
     println!("Body: {}", &body2);
     // println!("{}", type_of(&body2));
 
@@ -153,9 +165,39 @@ fn main() -> Result<()> {
         let p: JsonValue = json_res.unwrap();
         // println!("============= Prices =============\n {}", p["prices"].as_str().unwrap());
         println!("============= Prices =============\n {:#?}", p["prices"]);
+        println!("type of p {}", type_of(&p));
     } else {
         println!("Didn't work!");
     }
+
+    let response_text = coin_market_chart()
+        .expect("Couln't make request")
+        .text().expect("Could not read response text!");
+    
+    println!("type of response_text {:#?}", type_of(&response_text));
+    // println!("response_text {:#?}", &response_text);
+    
+    // let coinstuff = json!(response_text);
+
+    // if response_text.is_empty(){
+    //     println!("Sorry, Serde Derive didn't work.");
+    // } else {
+    //     let p: CoinHistory = coinstuff;
+    //     println!("============= Prices (derives) =============\n {:#?}", p.prices);
+    // }
+
+    let res3: serde_json::Value = reqwest::blocking::get("https://api.coingecko.com/api/v3/coins/iota/market_chart?vs_currency=usd&days=3&interval=daily")
+        .expect("Couldn't make request")
+        .json().expect("Couldn't parse JSON");
+
+    println!("\ntype of res3 {}", type_of(&res3["prices"]));
+    println!("============= res3 Prices =============\n {}", &res3["prices"][0]);
+
+    for price in &res3["prices"].as_array(){
+        println!("{:#?}", price);
+    }
+
+
 
     Ok(())
 }
