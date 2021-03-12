@@ -1,3 +1,5 @@
+// Coinstruct is where all structs are defined for the application
+
 use serde::{Deserialize};
 
 #[derive(Debug, Deserialize)]
