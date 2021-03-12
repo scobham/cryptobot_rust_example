@@ -2,16 +2,10 @@ mod coinstruct;
 use coinstruct::CoinsMarketChart;
 
 mod utils;
-use utils::{type_of};
+use utils::{type_of, convert_date, convert_vec_date};
 
 mod plotting;
 use plotting::{line_and_scatter_plot};
-
-use std::fmt;
-use std::collections::HashMap;
-// use std::any::type_name;
-use futures::TryFutureExt;
-use serde::{Deserialize, Deserializer, Serialize};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -21,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Perform the network request
     let res = client
-        .get("https://api.coingecko.com/api/v3/coins/iota/market_chart?vs_currency=usd&days=30&interval=daily")
+        .get("https://api.coingecko.com/api/v3/coins/iota/market_chart?vs_currency=usd&days=max&interval=daily")
         .send()
         .await?;
 
@@ -34,22 +28,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // println!("{:#?}", coin_prices.prices);
     // println!("type of coin_prices.prices{}", type_of(&coin_prices.prices));
 
-    let mut map = HashMap::<f32, f32>::new();
-
-    // for item in coin_prices.prices.iter() {
-    //     println!("==============\n{:?}", &item);
-    //     map.insert(&item[0], &item[1]);
-    // }
-
-    // println!("Map {:#?}", map);
-
-    // let mut x: Vec<_> = &coin_prices.prices.iter()[0];
-    // println!("X\n{:?}", x);
     let mut x: Vec<f64> = Vec::new();
     let mut y: Vec<f64> = Vec::new();
 
     for item in &coin_prices.prices{
-        // println!("==========\n{:?}", item[0]);
         x.push(item[0]);
         y.push(item[1]);
     }
@@ -59,8 +41,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // println!("type of x {}", type_of(&x));
     // println!("{:?}", &y);
     // println!("type of y {}", type_of(&y));
+    // convert_date();
 
-    line_and_scatter_plot(&x, &y, "iota");
+    let dates = convert_vec_date(&x);
+    // println!("{:?}", &dates);
+
+    line_and_scatter_plot(&dates, &y, "iota");
 
     Ok(())
 }

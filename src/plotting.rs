@@ -4,7 +4,8 @@ use plotly::{ Plot, Layout, Scatter};
 use plotly::common::{Mode, Title};
 use plotly::layout::{Axis, RangeSlider, RangeSelector, SelectorButton, SelectorStep, StepMode};
 
-pub fn line_and_scatter_plot(x: &Vec<f64>, y: &Vec<f64>, name: &str) {
+// pub fn line_and_scatter_plot(x: &Vec<f64>, y: &Vec<f64>, name: &str) {
+pub fn line_and_scatter_plot(x: &Vec<String>, y: &Vec<f64>, coin_name: &str) {
     let _x = x.to_vec();
     let _y = y.to_vec();
     // let date = data.iter().map(|d| d.date.clone()).collect();
@@ -13,7 +14,8 @@ pub fn line_and_scatter_plot(x: &Vec<f64>, y: &Vec<f64>, name: &str) {
     let trace1 = Scatter::new(_x, _y)
         .name("trace1")
         .mode(Mode::LinesMarkers)
-        .name(&name.to_uppercase());
+        .name(&coin_name.to_uppercase())
+        .show_legend(true);
     // let trace2 = Scatter::new(vec![2, 3, 4, 5], vec![16, 5, 11, 9])
     //     .name("trace2")
     //     .mode(Mode::Lines);
@@ -31,6 +33,11 @@ pub fn line_and_scatter_plot(x: &Vec<f64>, y: &Vec<f64>, name: &str) {
             SelectorButton::new()
                 .count(1)
                 .label("1m")
+                .step(SelectorStep::Month)
+                .step_mode(StepMode::Backward),
+            SelectorButton::new()
+                .count(3)
+                .label("3m")
                 .step(SelectorStep::Month)
                 .step_mode(StepMode::Backward),
             SelectorButton::new()
