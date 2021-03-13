@@ -62,3 +62,56 @@ pub fn line_and_scatter_plot(x: &Vec<String>, y: &Vec<f64>, coin_name: &str) {
 
     plot.show();
 }
+
+// pub fn series_line_and_scatter_plot(series: Vec<[Vec<String>; 2]>, coin_name: &str) {
+//     let _x = x.to_vec();
+//     let _y = y.to_vec();
+//     let high = data.iter().map(|d| d.high).collect();
+
+//     let trace1 = Scatter::new(_x, _y)
+//         .name("trace1")
+//         .mode(Mode::LinesMarkers)
+//         .name(&coin_name.to_uppercase())
+//         .show_legend(true);
+//     let trace3 = Scatter::new(vec![1, 2, 3, 4], vec![12, 9, 15, 12]).name("trace3");
+
+//     let mut plot = Plot::new();
+//     plot.add_trace(trace1);
+//      plot.add_trace(trace3);
+
+//     let layout = Layout::new()
+//         .title(Title::new("Coin Price History"))
+//         .x_axis(Axis::new().range_slider(RangeSlider::new().visible(true))
+//         .range_selector(RangeSelector::new().buttons(vec![
+//             SelectorButton::new()
+//                 .count(1)
+//                 .label("1m")
+//                 .step(SelectorStep::Month)
+//                 .step_mode(StepMode::Backward),
+//             SelectorButton::new()
+//                 .count(3)
+//                 .label("3m")
+//                 .step(SelectorStep::Month)
+//                 .step_mode(StepMode::Backward),
+//             SelectorButton::new()
+//                 .count(6)
+//                 .label("6m")
+//                 .step(SelectorStep::Month)
+//                 .step_mode(StepMode::Backward),
+//             SelectorButton::new()
+//                 .count(1)
+//                 .label("YTD")
+//                 .step(SelectorStep::Year)
+//                 .step_mode(StepMode::ToDate),
+//             SelectorButton::new()
+//                 .count(1)
+//                 .label("1y")
+//                 .step(SelectorStep::Year)
+//                 .step_mode(StepMode::Backward),
+//             SelectorButton::new().step(SelectorStep::All),
+//         ])),
+//         );
+//     plot.set_layout(layout);
+
+//     plot.show();
+// }
