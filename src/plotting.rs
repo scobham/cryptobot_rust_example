@@ -1,3 +1,7 @@
+
+use crate::utils::{coins_market_chart};
+
+
 // Plotting is where all plotter related functions reside
 
 use plotly::{ Plot, Layout, Scatter};
@@ -63,55 +67,60 @@ pub fn line_and_scatter_plot(x: &Vec<String>, y: &Vec<f64>, coin_name: &str) {
     plot.show();
 }
 
-// pub fn series_line_and_scatter_plot(series: Vec<[Vec<String>; 2]>, coin_name: &str) {
-//     let _x = x.to_vec();
-//     let _y = y.to_vec();
-//     let high = data.iter().map(|d| d.high).collect();
+pub async fn series_line_and_scatter_plot(coins: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+    // let mut prices = Vec::new();
+    let mut plot = Plot::new();
+    for coin in &coins[1..] {
+        let prices = coins_market_chart(coin).await?;
 
-//     let trace1 = Scatter::new(_x, _y)
-//         .name("trace1")
-//         .mode(Mode::LinesMarkers)
-//         .name(&coin_name.to_uppercase())
-//         .show_legend(true);
-//     let trace3 = Scatter::new(vec![1, 2, 3, 4], vec![12, 9, 15, 12]).name("trace3");
+        let trace = Scatter::new(prices.0, prices.1)
+        // .name("trace1")
+        .mode(Mode::LinesMarkers)
+        .name(&coin.to_uppercase())
+        .show_legend(true);
 
-//     let mut plot = Plot::new();
-//     plot.add_trace(trace1);
-//      plot.add_trace(trace3);
+        plot.add_trace(trace);
 
-//     let layout = Layout::new()
-//         .title(Title::new("Coin Price History"))
-//         .x_axis(Axis::new().range_slider(RangeSlider::new().visible(true))
-//         .range_selector(RangeSelector::new().buttons(vec![
-//             SelectorButton::new()
-//                 .count(1)
-//                 .label("1m")
-//                 .step(SelectorStep::Month)
-//                 .step_mode(StepMode::Backward),
-//             SelectorButton::new()
-//                 .count(3)
-//                 .label("3m")
-//                 .step(SelectorStep::Month)
-//                 .step_mode(StepMode::Backward),
-//             SelectorButton::new()
-//                 .count(6)
-//                 .label("6m")
-//                 .step(SelectorStep::Month)
-//                 .step_mode(StepMode::Backward),
-//             SelectorButton::new()
-//                 .count(1)
-//                 .label("YTD")
-//                 .step(SelectorStep::Year)
-//                 .step_mode(StepMode::ToDate),
-//             SelectorButton::new()
-//                 .count(1)
-//                 .label("1y")
-//                 .step(SelectorStep::Year)
-//                 .step_mode(StepMode::Backward),
-//             SelectorButton::new().step(SelectorStep::All),
-//         ])),
-//         );
-//     plot.set_layout(layout);
+    }
 
-//     plot.show();
-// }
+    // TEST
+    // println!("{:#?}", &prices);
+    
+    let layout = Layout::new()
+    .title(Title::new("Coin Price History"))
+    .x_axis(Axis::new().range_slider(RangeSlider::new().visible(true))
+    .range_selector(RangeSelector::new().buttons(vec![
+        SelectorButton::new()
+            .count(1)
+            .label("1m")
+            .step(SelectorStep::Month)
+            .step_mode(StepMode::Backward),
+        SelectorButton::new()
+            .count(3)
+            .label("3m")
+            .step(SelectorStep::Month)
+            .step_mode(StepMode::Backward),
+        SelectorButton::new()
+            .count(6)
+            .label("6m")
+            .step(SelectorStep::Month)
+            .step_mode(StepMode::Backward),
+        SelectorButton::new()
+            .count(1)
+            .label("YTD")
+            .step(SelectorStep::Year)
+            .step_mode(StepMode::ToDate),
+        SelectorButton::new()
+            .count(1)
+            .label("1y")
+            .step(SelectorStep::Year)
+            .step_mode(StepMode::Backward),
+        SelectorButton::new().step(SelectorStep::All),
+    ])),
+    );
+    plot.set_layout(layout);
+
+    plot.show();
+
+    Ok(())
+}
