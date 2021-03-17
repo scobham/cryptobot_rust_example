@@ -27,7 +27,7 @@ pub fn convert_vec_date(dates: &Vec<f64>) -> Vec<String> {
 }
 
 // Get coins_market_chart data
-pub async fn coins_market_chart(coin_name: &str) -> Result<(Vec<std::string::String>, Vec<f64>), Box<dyn std::error::Error>> {
+pub async fn coins_market_chart(coin_name: &str) -> Result<(Vec<std::string::String>, Vec<f64>, Vec<f64>), Box<dyn std::error::Error>> {
     // Build the client using the builder pattern
     let client = reqwest::Client::builder()
         .build()?;
@@ -39,24 +39,29 @@ pub async fn coins_market_chart(coin_name: &str) -> Result<(Vec<std::string::Str
         .await?;
 
     // Parse the response body as Json with CoinsMarketChart struct
-    let coin_prices = res
+    let coin_data = res
         .json::<CoinsMarketChart>()
         .await?;
 
     //TEST
-    // println!("{:#?}", coin_prices.prices);
+    // println!("{:#?}", coin_data.prices);
     // println!("type of coin_prices.prices{}", type_of(&coin_prices.prices));
 
     let mut x: Vec<f64> = Vec::new();
-    let mut y: Vec<f64> = Vec::new();
+    let mut coin_prices: Vec<f64> = Vec::new();
+    let mut coin_volumes: Vec<f64> = Vec::new();
 
-    for item in &coin_prices.prices{
+    for item in &coin_data.prices{
         x.push(item[0]);
-        y.push(item[1]);
+        coin_prices.push(item[1]);
+    }
+
+    for item in &coin_data.total_volumes{
+        coin_volumes.push(item[1]);
     }
 
     let dates = convert_vec_date(&x);
 
 
-    Ok((dates, y))
+    Ok((dates, coin_prices, coin_volumes))
 }

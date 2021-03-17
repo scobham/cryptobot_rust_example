@@ -1,12 +1,15 @@
 
+use std::borrow::Borrow;
+
 use crate::utils::{coins_market_chart};
+use chrono::{Utc};
 
 
 // Plotting is where all plotter related functions reside
 
-use plotly::{ Plot, Layout, Scatter};
+use plotly::{ Plot, Layout, Scatter, Bar};
 use plotly::common::{Mode, Title};
-use plotly::layout::{Axis, RangeSlider, RangeSelector, SelectorButton, SelectorStep, StepMode};
+use plotly::layout::{Axis, RangeSlider, RangeSelector, SelectorButton, SelectorStep, StepMode, LayoutGrid, GridPattern, BarMode};
 
 // pub fn line_and_scatter_plot(x: &Vec<f64>, y: &Vec<f64>, name: &str) {
 pub fn line_and_scatter_plot(x: &Vec<String>, y: &Vec<f64>, coin_name: &str) {
@@ -69,26 +72,102 @@ pub fn line_and_scatter_plot(x: &Vec<String>, y: &Vec<f64>, coin_name: &str) {
 
 pub async fn series_line_and_scatter_plot(coins: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
     // let mut prices = Vec::new();
-    let mut plot = Plot::new();
+    let mut plot_price = Plot::new();
+    let mut plot_volume = Plot::new();
     for coin in &coins[1..] {
-        let prices = coins_market_chart(coin).await?;
+        let (dates, prices , volumes) = coins_market_chart(coin).await?;
+        let date = dates.clone();
 
-        let trace = Scatter::new(prices.0, prices.1)
+        let trace = Scatter::new(dates, prices)
         // .name("trace1")
         .mode(Mode::LinesMarkers)
         .name(&coin.to_uppercase())
+        // .x_axis(format!("x-trace-{}", &coin).as_str())
+        // .y_axis(format!("y-trace-{}", &coin).as_str())
+        .x_axis("x-trace")
+        .y_axis("y-trace")
         .show_legend(true);
 
-        plot.add_trace(trace);
+        let bar = Bar::new(date, volumes)
+        .name(format!("{} Volume", &coin.to_uppercase()).as_str())
+        // .x_axis(format!("x-bar-{}", &coin).as_str())
+        // .y_axis(format!("y-bar-{}", &coin).as_str())
+        .x_axis("x-bar")
+        .y_axis("y-bar")
+        ;
+
+
+        plot_price.add_trace(trace);
+        plot_volume.add_trace(bar);
+        // plot.add_traces(vec!(trace, bar));
 
     }
 
     // TEST
     // println!("{:#?}", &prices);
     
-    let layout = Layout::new()
+    let layout_price = Layout::new()
+    // .grid(
+    //     LayoutGrid::new()
+    //     .rows(1)
+    //     .columns(2)
+    //     .pattern(GridPattern::Independent),
+    // )
     .title(Title::new("Coin Price History"))
-    .x_axis(Axis::new().range_slider(RangeSlider::new().visible(true))
+    
+
+    .x_axis(Axis::new()
+        .domain(&[0., 1.])
+        .range_slider(RangeSlider::new().visible(true))
+        .range_selector(RangeSelector::new().buttons(vec![
+            SelectorButton::new()
+                .count(1)
+                .label("1m")
+                .step(SelectorStep::Month)
+                .step_mode(StepMode::Backward),
+            SelectorButton::new()
+                .count(3)
+                .label("3m")
+                .step(SelectorStep::Month)
+                .step_mode(StepMode::Backward),
+            SelectorButton::new()
+                .count(6)
+                .label("6m")
+                .step(SelectorStep::Month)
+                .step_mode(StepMode::Backward),
+            SelectorButton::new()
+                .count(1)
+                .label("YTD")
+                .step(SelectorStep::Year)
+                .step_mode(StepMode::ToDate),
+            SelectorButton::new()
+                .count(1)
+                .label("1y")
+                .step(SelectorStep::Year)
+                .step_mode(StepMode::Backward),
+            SelectorButton::new().step(SelectorStep::All),
+        ])),
+    )
+    // .y_axis(Axis::new().domain(&[0.5, 1.]).anchor("y-trace"))
+
+    // .x_axis2(Axis::new().domain(&[0., 1.]).anchor("x-trace"))
+    // .y_axis2(Axis::new().domain(&[0.3, 0.45]).anchor("y-bar"))
+
+    // .x_axis3(Axis::new().domain(&[0., 1.]).anchor("x-bar"))
+    // .y_axis3(Axis::new().domain(&[0., 0.25]).anchor("y-bar"))
+    // .y_axis(Axis::new().position(0.2))
+    // .y_axis2(Axis::new().domain(&[0.2, 0.45]).anchor("free").overlaying("y-bar"))
+    // .y_axis2(Axis::new().position(0.2).anchor("free").overlaying("y-trace"))
+    // .y_axis3(Axis::new().domain(&[0.5, 1.]).anchor("free").overlaying("y-trace"))
+    // .y_axis3(Axis::new().position(0.6).anchor("free").overlaying("y-trace"))
+    ;
+
+    let layout_volume = Layout::new()
+    .title(Title::new("Coin Market Volume History"))
+    .bar_mode(BarMode::Group)
+    .x_axis(Axis::new()
+    .domain(&[0., 1.])
+    .range_slider(RangeSlider::new().visible(true))
     .range_selector(RangeSelector::new().buttons(vec![
         SelectorButton::new()
             .count(1)
@@ -117,10 +196,14 @@ pub async fn series_line_and_scatter_plot(coins: Vec<String>) -> Result<(), Box<
             .step_mode(StepMode::Backward),
         SelectorButton::new().step(SelectorStep::All),
     ])),
-    );
-    plot.set_layout(layout);
+    )
+    ;
 
-    plot.show();
+    plot_price.set_layout(layout_price);
+    plot_volume.set_layout(layout_volume);
+
+    plot_price.show();
+    plot_volume.show();
 
     Ok(())
 }
